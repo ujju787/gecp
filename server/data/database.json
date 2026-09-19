@@ -1,0 +1,178 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-01",
+      "name": "Dr. Sanjay Kumar Singh",
+      "email": "admin@gecpalamu.ac.in",
+      "password": "$2b$10$CqkvzqhpQDHxSLSeodbqpuLW5HVMEkqWcZR22xZuvoLSkjRvkTS8G",
+      "role": "admin",
+      "designation": "Principal & Institutional Admin",
+      "status": "APPROVED",
+      "createdAt": "2026-08-01T10:00:00.000Z",
+      "approvedAt": "2026-08-01T10:00:00.000Z",
+      "approvedBy": "SYSTEM"
+    },
+    {
+      "id": "usr-fac-01",
+      "name": "Dr. A. K. Verma",
+      "email": "akverma@gecpalamu.ac.in",
+      "password": "$2b$10$CqkvzqhpQDHxSLSeodbqpusgCFlqQpF9G9GSvzPotv1lf9kuk5yPK",
+      "role": "faculty",
+      "designation": "Associate Professor & HOD",
+      "department": "Computer Science and Engineering",
+      "status": "APPROVED",
+      "createdAt": "2026-08-01T10:00:00.000Z",
+      "approvedAt": "2026-08-01T10:00:00.000Z",
+      "approvedBy": "usr-admin-01"
+    }
+  ],
+  "attendance_records": [],
+  "library_resources": [
+    {
+      "id": "res-db-767775",
+      "title": "SIH2026 IDEA Presentation Format. 2026",
+      "category": "Student Shared Notes",
+      "branch": "CSE",
+      "semester": "5th Semester",
+      "year": "2026",
+      "fileType": "PDF",
+      "size": "1.4 MB",
+      "downloads": 1,
+      "rating": 5,
+      "uploadedBy": "Computer Science Department",
+      "uploaderId": "anonymous",
+      "tags": [
+        "SIH 2026"
+      ],
+      "verifiedByAdmin": false,
+      "createdAt": "2026-09-17"
+    },
+    {
+      "id": "res-pyq-2",
+      "title": "JUT End-Term Exam 2024: Operating Systems & Systems Programming (CS502)",
+      "category": "Previous Year Questions (PYQs)",
+      "branch": "CSE",
+      "semester": "5th Semester",
+      "year": "2024",
+      "fileType": "PDF",
+      "size": "1.8 MB",
+      "downloads": 383,
+      "rating": 4.8,
+      "uploadedBy": "Central Exam Cell",
+      "tags": [
+        "OS",
+        "CPU Scheduling",
+        "Paging",
+        "Deadlocks"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-01"
+    },
+    {
+      "id": "res-pyq-3",
+      "title": "JUT End-Term Exam 2025: Fluid Mechanics & Machinery (ME301)",
+      "category": "Previous Year Questions (PYQs)",
+      "branch": "ME",
+      "semester": "3rd Semester",
+      "year": "2025",
+      "fileType": "PDF",
+      "size": "3.1 MB",
+      "downloads": 298,
+      "rating": 4.7,
+      "uploadedBy": "Mechanical Dept",
+      "tags": [
+        "Bernoulli",
+        "Navier Stokes",
+        "Turbines",
+        "Pumps"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-02"
+    },
+    {
+      "id": "res-pyq-4",
+      "title": "JUT End-Term Exam 2024: Structural Analysis & Design (CE501)",
+      "category": "Previous Year Questions (PYQs)",
+      "branch": "CE",
+      "semester": "5th Semester",
+      "year": "2024",
+      "fileType": "PDF",
+      "size": "2.9 MB",
+      "downloads": 264,
+      "rating": 4.8,
+      "uploadedBy": "Civil Dept",
+      "tags": [
+        "Moment Distribution",
+        "Trusses",
+        "Deflection"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-02"
+    },
+    {
+      "id": "res-pyq-5",
+      "title": "JUT End-Term Exam 2025: Power Systems Analysis (EE501)",
+      "category": "Previous Year Questions (PYQs)",
+      "branch": "EE",
+      "semester": "5th Semester",
+      "year": "2025",
+      "fileType": "PDF",
+      "size": "2.7 MB",
+      "downloads": 312,
+      "rating": 4.9,
+      "uploadedBy": "Electrical Dept",
+      "tags": [
+        "Load Flow",
+        "Fault Analysis",
+        "Stability",
+        "JUT 2025"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-03"
+    },
+    {
+      "id": "res-not-1",
+      "title": "Complete Lecture Notes: Design & Analysis of Algorithms (Unit 1 to 5)",
+      "category": "Faculty Lecture Notes",
+      "branch": "CSE",
+      "semester": "5th Semester",
+      "year": "2026",
+      "fileType": "PDF",
+      "size": "8.6 MB",
+      "downloads": 742,
+      "rating": 5,
+      "uploadedBy": "Prof. Priya Kumari (CSE Dept)",
+      "tags": [
+        "Asymptotic Notations",
+        "Greedy",
+        "DP",
+        "NP-Completeness"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-10"
+    },
+    {
+      "id": "res-lab-1",
+      "title": "Official Lab Manual: DBMS & PL/SQL Practical with 25 Verified Programs",
+      "category": "Laboratory Manuals",
+      "branch": "CSE",
+      "semester": "5th Semester",
+      "year": "2026",
+      "fileType": "PDF",
+      "size": "4.1 MB",
+      "downloads": 519,
+      "rating": 4.9,
+      "uploadedBy": "Dr. A. K. Verma",
+      "tags": [
+        "SQL DDL/DML",
+        "Triggers",
+        "Cursors",
+        "Procedures",
+        "ER Diagram"
+      ],
+      "verifiedByAdmin": true,
+      "createdAt": "2026-08-15"
+    }
+  ],
+  "fee_transactions": []
+}
