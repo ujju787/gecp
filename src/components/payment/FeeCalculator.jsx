@@ -135,6 +135,17 @@ export default function FeeCalculator({ currentUser, studentData }) {
   const loadUpiQr = async () => {
     setIsGeneratingQr(true);
     const payload = getUpiPayload();
+
+    // 1. Instant 0ms client-side render so user never sees a blank/broken box
+    QRCode.toDataURL(payload, {
+      width: 240,
+      margin: 2,
+      color: { dark: '#0c4a6e', light: '#ffffff' }
+    }, (err, url) => {
+      if (!err && url) setPythonUpiQr(url);
+    });
+
+    // 2. Fetch high-res QR from backend microservice
     try {
       const res = await api.generatePythonQR(payload, {
         boxSize: 8,
@@ -143,23 +154,16 @@ export default function FeeCalculator({ currentUser, studentData }) {
         backColor: '#ffffff'
       });
       if (res && res.qrBase64) {
-        setPythonUpiQr(res.qrBase64);
-        setIsGeneratingQr(false);
-        return;
+        const formatted = res.qrBase64.startsWith('data:')
+          ? res.qrBase64
+          : `data:image/png;base64,${res.qrBase64}`;
+        setPythonUpiQr(formatted);
       }
     } catch (e) {
       console.warn('Python QR microservice offline, using client-side fallback generator:', e);
-    }
-
-    // Client-side fallback
-    QRCode.toDataURL(payload, {
-      width: 240,
-      margin: 2,
-      color: { dark: '#0c4a6e', light: '#ffffff' }
-    }, (err, url) => {
-      if (!err && url) setPythonUpiQr(url);
+    } finally {
       setIsGeneratingQr(false);
-    });
+    }
   };
 
   const handleStartPayment = (e) => {
@@ -990,9 +994,18 @@ export default function FeeCalculator({ currentUser, studentData }) {
                     ) : pythonUpiQr ? (
                       <div className="p-2 bg-white rounded-2xl border-2 border-gec-blue/30 shadow-md inline-block">
                         <img 
-                          src={pythonUpiQr} 
+                          src={pythonUpiQr?.startsWith('data:') ? pythonUpiQr : `data:image/png;base64,${pythonUpiQr}`} 
                           alt="Dynamic UPI QR Code" 
                           className="w-40 h-40 object-contain mx-auto rounded-lg"
+                          onError={() => {
+                            QRCode.toDataURL(getUpiPayload(), {
+                              width: 240,
+                              margin: 2,
+                              color: { dark: '#0c4a6e', light: '#ffffff' }
+                            }, (err, url) => {
+                              if (!err && url) setPythonUpiQr(url);
+                            });
+                          }}
                         />
                       </div>
                     ) : (

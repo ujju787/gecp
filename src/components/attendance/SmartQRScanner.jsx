@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import jsQR from 'jsqr';
+import QRCode from 'qrcode';
 import { api } from '../../services/api';
 import { printStudentIdCard } from '../../utils/printDocument';
 import { calculateOverallAttendance } from '../../data/curriculumData';
@@ -99,6 +100,15 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
         secKey: "valid-jut-token-998"
       });
 
+      // 1. Instant client-side QR generation (0ms)
+      QRCode.toDataURL(payload, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#064e3b', light: '#ffffff' }
+      }, (err, url) => {
+        if (!err && url) setStudentQr(url);
+      });
+
       setIsGeneratingQr(true);
       api.generatePythonQR(payload, {
         boxSize: 8,
@@ -108,7 +118,10 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
       })
       .then(res => {
         if (res && res.qrBase64) {
-          setStudentQr(res.qrBase64);
+          const formatted = res.qrBase64.startsWith('data:')
+            ? res.qrBase64
+            : `data:image/png;base64,${res.qrBase64}`;
+          setStudentQr(formatted);
         }
       })
       .catch(err => {
@@ -597,9 +610,24 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
                         <div className="flex items-center gap-3">
                           {studentQr ? (
                             <img
-                              src={studentQr}
+                              src={studentQr?.startsWith('data:') ? studentQr : `data:image/png;base64,${studentQr}`}
                               alt="Student QR Code"
                               className="w-16 h-16 bg-white p-1 rounded-xl shadow-inner border border-sky-400"
+                              onError={() => {
+                                if (studentData) {
+                                  const payload = JSON.stringify({
+                                    type: "GECP_ATTENDANCE",
+                                    id: studentData.id,
+                                    roll: studentData.rollNo,
+                                    name: studentData.name,
+                                    branch: studentData.branchCode || studentData.branch || "CSE",
+                                    secKey: "valid-jut-token-998"
+                                  });
+                                  QRCode.toDataURL(payload, { width: 200, margin: 2, color: { dark: '#064e3b', light: '#ffffff' } }, (err, url) => {
+                                    if (!err && url) setStudentQr(url);
+                                  });
+                                }
+                              }}
                             />
                           ) : (
                             <div className="w-16 h-16 bg-white flex items-center justify-center rounded-xl">

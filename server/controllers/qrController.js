@@ -6,10 +6,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Find Python executable in server/.venv or fallback to python
+// Find Python executable in server/.venv or fallback to system python/python3
 const venvPythonWin = path.join(__dirname, '..', '.venv', 'Scripts', 'python.exe');
 const venvPythonUnix = path.join(__dirname, '..', '.venv', 'bin', 'python');
-let pythonPath = 'python';
+let pythonPath = process.platform === 'win32' ? 'python' : 'python3';
 
 if (fs.existsSync(venvPythonWin)) {
   pythonPath = venvPythonWin;
@@ -50,8 +50,8 @@ export const generatePythonQR = (req, res) => {
       '--error-level', String(errorLevel)
     ];
 
-    execFile(pythonPath, args, { maxBuffer: 10 * 1024 * 1024 }, async (error, stdout, stderr) => {
-      if (error) {
+    execFile(pythonPath, args, { maxBuffer: 10 * 1024 * 1024, timeout: 2500 }, async (error, stdout, stderr) => {
+      if (error || !stdout) {
         try {
           const QRCode = (await import('qrcode')).default;
           const dataUrl = await QRCode.toDataURL(payloadString, {
@@ -62,30 +62,32 @@ export const generatePythonQR = (req, res) => {
             },
             errorCorrectionLevel: errorLevel === 'H' ? 'high' : 'medium'
           });
-          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
           return res.json({
             success: true,
-            engine: 'Node.js QR Engine (Cloud Fallback)',
-            qrBase64: base64Data,
+            engine: 'Node.js QR Engine (Cloud Ready)',
+            qrBase64: dataUrl,
             width: 300,
             height: 300,
             payload: data
           });
         } catch (nodeErr) {
-          console.error('Python QR Generator Error:', stderr || error);
+          console.error('QR Generator Fallback Error:', nodeErr);
           return res.status(500).json({ 
             error: 'QR generation process failed', 
-            details: stderr || error.message 
+            details: nodeErr.message 
           });
         }
       }
 
       try {
         const parsed = JSON.parse(stdout.trim());
+        const formattedQr = parsed.qrBase64 && parsed.qrBase64.startsWith('data:')
+          ? parsed.qrBase64
+          : `data:image/png;base64,${parsed.qrBase64}`;
         return res.json({
           success: true,
           engine: 'Python 3.14 + qrcode + PIL (Pillow)',
-          qrBase64: parsed.qrBase64,
+          qrBase64: formattedQr,
           width: parsed.width,
           height: parsed.height,
           payload: parsed.payload

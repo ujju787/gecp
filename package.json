@@ -8,12 +8,19 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/index.js",
-    "render-build": "npm install && npm run build && cd server && npm install"
+    "render-build": "npm install && npm run build && cd server && npm install",
+    "postinstall": "cd server && npm install"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "jsqr": "^1.4.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.16.0",
+    "mysql2": "^3.24.4",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

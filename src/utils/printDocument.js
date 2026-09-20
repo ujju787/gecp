@@ -58,6 +58,7 @@ export const printHtmlContent = (htmlContent, documentTitle = 'GEC Palamu Offici
  * Print Official Student Identity Card (CR-80 Institutional ID Format)
  */
 export const printStudentIdCard = (student, qrDataUrl = '') => {
+  const safeQr = qrDataUrl ? (qrDataUrl.startsWith('data:') ? qrDataUrl : `data:image/png;base64,${qrDataUrl}`) : '';
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -217,7 +218,7 @@ export const printStudentIdCard = (student, qrDataUrl = '') => {
 
         <div class="qr-row">
           <div>
-            ${qrDataUrl ? `<img src="${qrDataUrl}" class="qr-img" alt="Smart Attendance QR" />` : '<div style="font-size:9px; color:#64748b;">Smart QR Code Active</div>'}
+            ${safeQr ? `<img src="${safeQr}" class="qr-img" alt="Smart Attendance QR" />` : '<div style="font-size:9px; color:#64748b;">Smart QR Code Active</div>'}
             <div style="font-size:7px; color:#64748b; margin-top:2px;">Campus Attendance QR</div>
           </div>
           <div class="sig-block">

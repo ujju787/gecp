@@ -233,6 +233,9 @@ export const api = {
     });
     const result = await res.json();
     if (!res.ok) throw result;
+    if (result && result.qrBase64 && !result.qrBase64.startsWith('data:')) {
+      result.qrBase64 = `data:image/png;base64,${result.qrBase64}`;
+    }
     return result;
   },
 

@@ -10,11 +10,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_CONFIG = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'UjjU@123',
-  database: process.env.DB_NAME || 'gec_palamu',
+  host: process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || '3306', 10),
+  user: process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || 'root',
+  password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : (process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || 'UjjU@123'),
+  database: process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || 'gec_palamu',
   waitForConnections: true,
   connectionLimit: 15,
   queueLimit: 0,
@@ -27,30 +27,39 @@ let pool = null;
 async function getPool() {
   if (pool) return pool;
 
-  // 1. Support Cloud MySQL connection string (TiDB Cloud / Railway / Aiven / Clever Cloud)
-  const dbUri = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.TIDB_URL;
+  // 1. Support Cloud MySQL connection string (Railway / TiDB Cloud / Aiven / Clever Cloud)
+  const rawUri = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PRIVATE_URL || process.env.MYSQL_PUBLIC_URL || process.env.TIDB_URL || '';
+  const dbUri = rawUri.trim().replace(/^["']|["']$/g, '');
+
+  const isRemote = DB_CONFIG.host !== 'localhost' && DB_CONFIG.host !== '127.0.0.1';
+  const isRailwayInternal = DB_CONFIG.host.includes('railway.internal') || (dbUri && dbUri.includes('railway.internal'));
+  const sslConfig = (process.env.DB_SSL === 'true' || (isRemote && !isRailwayInternal && process.env.DB_SSL !== 'false'))
+    ? { rejectUnauthorized: false }
+    : undefined;
+
   if (dbUri) {
     try {
+      console.log('📡 [Database] Initializing Cloud MySQL connection via connection URI...');
       pool = mysql.createPool({
         uri: dbUri,
         waitForConnections: true,
-        connectionLimit: 15,
+        connectionLimit: 10,
         queueLimit: 0,
         enableKeepAlive: true,
         keepAliveInitialDelay: 0,
-        ssl: process.env.DB_SSL === 'false' ? undefined : { rejectUnauthorized: false }
+        ssl: sslConfig
       });
       return pool;
     } catch (err) {
-      console.warn('Cloud URI pool initialization warning:', err.message);
+      console.error('❌ Cloud URI pool initialization failed:', err.message);
     }
   }
 
-  // 2. Fallback to discrete DB_CONFIG with SSL support for remote hosts
-  const isRemote = DB_CONFIG.host !== 'localhost' && DB_CONFIG.host !== '127.0.0.1';
-  const sslConfig = (process.env.DB_SSL === 'true' || (isRemote && process.env.DB_SSL !== 'false'))
-    ? { rejectUnauthorized: false }
-    : undefined;
+  // 2. Check if discrete DB_HOST is configured for remote or local MySQL
+  if (!dbUri && !isRemote) {
+    console.warn('⚠️ [Database Notice] No DATABASE_URL, MYSQL_URL, or remote DB_HOST detected in Environment Variables.');
+    console.warn('⚠️ Falling back to 127.0.0.1:3306 (localhost).');
+  }
 
   try {
     const initConn = await mysql.createConnection({

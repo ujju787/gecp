@@ -251,7 +251,10 @@ export default function StudentDashboard({
         backColor: '#ffffff'
       });
       if (res && res.qrBase64) {
-        setPythonIdQr(res.qrBase64);
+        const formatted = res.qrBase64.startsWith('data:')
+          ? res.qrBase64
+          : `data:image/png;base64,${res.qrBase64}`;
+        setPythonIdQr(formatted);
       }
     } catch (e) {
       console.warn('Python QR generator fallback in dashboard:', e);
@@ -262,9 +265,17 @@ export default function StudentDashboard({
 
   useEffect(() => {
     if (showLargeQrModal || showIdCardModal) {
+      // 0ms instant client-side QR generation
+      QRCode.toDataURL(qrPayload, {
+        width: 260,
+        margin: 2,
+        color: { dark: '#0c4a6e', light: '#ffffff' }
+      }, (err, url) => {
+        if (!err && url) setPythonIdQr(url);
+      });
       loadPythonIdQr();
     }
-  }, [showLargeQrModal, showIdCardModal]);
+  }, [showLargeQrModal, showIdCardModal, qrPayload]);
 
   useEffect(() => {
     if (showIdCardModal && qrCanvasRef.current) {
@@ -1316,7 +1327,20 @@ export default function StudentDashboard({
             <div className="p-4 bg-slate-50 border-2 border-emerald-400 rounded-2xl inline-block shadow-inner">
               {pythonIdQr ? (
                 <div>
-                  <img src={pythonIdQr} alt="Python Smart Attendance QR" className="w-56 h-56 mx-auto rounded-xl shadow-xs" />
+                  <img 
+                    src={pythonIdQr?.startsWith('data:') ? pythonIdQr : `data:image/png;base64,${pythonIdQr}`} 
+                    alt="Python Smart Attendance QR" 
+                    className="w-56 h-56 mx-auto rounded-xl shadow-xs" 
+                    onError={() => {
+                      QRCode.toDataURL(qrPayload, {
+                        width: 260,
+                        margin: 2,
+                        color: { dark: '#0c4a6e', light: '#ffffff' }
+                      }, (err, url) => {
+                        if (!err && url) setPythonIdQr(url);
+                      });
+                    }}
+                  />
                   <div className="mt-2 text-[10px] font-bold text-sky-800 bg-sky-100 rounded-full py-0.5 px-2 inline-block">
                     🐍 Python 3.14 High-Res Engine
                   </div>
