@@ -227,19 +227,29 @@ export default function StudentDashboard({
     }
   }, [student?.id, student?.rollNo]);
 
-  // Generate real, scannable QR Code on canvas and via Python QR engine
+  // Generate real, scannable QR Code linking to official verification portal
   const [pythonIdQr, setPythonIdQr] = useState(null);
   const [isGeneratingPythonQr, setIsGeneratingPythonQr] = useState(false);
 
-  const qrPayload = JSON.stringify({
-    type: "GECP_ATTENDANCE",
-    id: student?.id || "usr-std-01",
-    roll: student?.rollNo || "NEW/REG/001",
-    name: student?.name || "Student",
-    branch: student?.branchCode || "CSE",
-    secKey: "valid-jut-token-998",
-    ts: Date.now()
-  });
+  // Generates public verification URL scannable by Google Lens / Google Scanner
+  const getVerificationUrl = () => {
+    const origin = typeof window !== 'undefined' && window.location?.origin 
+      ? window.location.origin 
+      : 'https://gecp.vercel.app';
+    const params = new URLSearchParams({
+      verify: 'student',
+      id: student?.id || 'usr-std-01',
+      roll: student?.rollNo || '22/CSE/042',
+      name: student?.name || 'Student',
+      branch: student?.branchCode || student?.branch || 'CSE',
+      sem: student?.semester || '5th Sem',
+      batch: student?.batch || '2022 - 2026',
+      reg: student?.regNo || 'JUT/2022/CSE/0892'
+    });
+    return `${origin}/?${params.toString()}`;
+  };
+
+  const qrPayload = getVerificationUrl();
 
   const loadPythonIdQr = async () => {
     setIsGeneratingPythonQr(true);
@@ -1231,7 +1241,7 @@ export default function StudentDashboard({
                     <div>
                       <div className="font-bold text-emerald-700 uppercase tracking-wider text-[8px] flex items-center gap-1">
                         <ScanLine className="w-2.5 h-2.5" />
-                        <span>Smart Attendance QR</span>
+                        <span>Google Scanner & Digital ID QR</span>
                       </div>
                       <div className="font-mono text-[8px] text-slate-600">ID: {student.id || 'usr-std-01'}</div>
                       <div className="font-mono text-[8px] text-gec-blue font-bold">{student.rollNo}</div>
@@ -1255,16 +1265,16 @@ export default function StudentDashboard({
 
               {/* QR Verification Payload Tooltip */}
               <div className="mt-3 p-2.5 rounded-xl bg-slate-100 text-[10px] text-slate-600 flex items-center justify-between">
-                <span>Real 2D QR Code: <strong className="text-emerald-700 font-bold">Active & Scannable by Camera</strong></span>
+                <span>Google Scanner Link: <strong className="text-emerald-700 font-bold">Scannable by Google Lens & Camera</strong></span>
                 <button
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(qrPayload);
-                    alert("Smart Attendance QR payload copied! You can paste it into the Faculty Smart Scanner Terminal to test.");
+                    alert("Official Student Verification URL copied to clipboard! You can paste it into any browser or test it.");
                   }}
                   className="font-bold text-gec-blue hover:underline cursor-pointer"
                 >
-                  Copy Payload Text
+                  Copy Verification URL
                 </button>
               </div>
             </div>
@@ -1310,7 +1320,7 @@ export default function StudentDashboard({
             <div className="flex items-center justify-between">
               <div className="text-xs font-bold text-gec-navy flex items-center gap-1.5">
                 <ScanLine className="w-4 h-4 text-emerald-600" />
-                <span>Classroom Smart Attendance QR</span>
+                <span>Google Scanner & Smart Attendance QR</span>
               </div>
               <button 
                 onClick={() => setShowLargeQrModal(false)}
@@ -1321,7 +1331,7 @@ export default function StudentDashboard({
             </div>
 
             <p className="text-[11px] text-slate-500">
-              Hold this QR code in front of the classroom camera or faculty terminal to record instant verified attendance.
+              Scan with <strong>Google Scanner</strong>, <strong>Google Lens</strong>, or your phone's camera to instantly view official verified student credentials, or present to faculty terminal for classroom attendance.
             </p>
 
             <div className="p-4 bg-slate-50 border-2 border-emerald-400 rounded-2xl inline-block shadow-inner">
@@ -1329,7 +1339,7 @@ export default function StudentDashboard({
                 <div>
                   <img 
                     src={pythonIdQr?.startsWith('data:') ? pythonIdQr : `data:image/png;base64,${pythonIdQr}`} 
-                    alt="Python Smart Attendance QR" 
+                    alt="Institutional Verification QR" 
                     className="w-56 h-56 mx-auto rounded-xl shadow-xs" 
                     onError={() => {
                       QRCode.toDataURL(qrPayload, {
@@ -1341,8 +1351,13 @@ export default function StudentDashboard({
                       });
                     }}
                   />
-                  <div className="mt-2 text-[10px] font-bold text-sky-800 bg-sky-100 rounded-full py-0.5 px-2 inline-block">
-                    🐍 Python 3.14 High-Res Engine
+                  <div className="mt-2 flex items-center justify-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-sky-800 bg-sky-100 rounded-full py-0.5 px-2.5">
+                      📷 Scannable by Google Lens
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 rounded-full py-0.5 px-2.5">
+                      ✓ JUT Verified
+                    </span>
                   </div>
                 </div>
               ) : (

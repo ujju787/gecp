@@ -1,5 +1,9 @@
 // Central API Client for GEC Palamu Frontend
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+// Supports Vercel Frontend <-> Railway Backend architecture
+const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '').trim();
+export const API_BASE = rawApiUrl
+  ? (rawApiUrl.endsWith('/api') ? rawApiUrl.replace(/\/+$/, '') : `${rawApiUrl.replace(/\/+$/, '')}/api`)
+  : '/api';
 
 // Token storage helpers
 export const getAuthToken = () => localStorage.getItem('gecp_auth_token');
@@ -167,6 +171,17 @@ export const api = {
       return res.json();
     } catch {
       return [];
+    }
+  },
+
+  getStudentVerification: async (identifier) => {
+    try {
+      const res = await fetch(`${API_BASE}/students/verify/${encodeURIComponent(identifier)}`, {
+        headers: getHeaders(false)
+      });
+      return res.json();
+    } catch (e) {
+      return { success: false, error: e.message };
     }
   },
 

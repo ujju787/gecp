@@ -96,6 +96,54 @@ app.get('/api/students/all', async (req, res) => {
   }
 });
 
+// Public Student Credential Verification (Google Scanner / Public Verification Link)
+app.get('/api/students/verify/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    if (!identifier) {
+      return res.status(400).json({ error: 'Student identifier is required.' });
+    }
+    let student = await db.findUserById(identifier);
+    if (!student) {
+      student = await db.findUserByRoll(identifier);
+    }
+    if (!student) {
+      return res.status(404).json({ 
+        success: false, 
+        verified: false, 
+        error: 'Student credential record not found in institutional database.' 
+      });
+    }
+
+    const verificationProfile = {
+      id: student.id,
+      name: student.name,
+      rollNo: student.rollNo,
+      regNo: student.regNo || `JUT/${student.batch?.split(' - ')[0] || '2022'}/${student.branchCode || 'CSE'}/${student.rollNo?.slice(-4) || '0892'}`,
+      branch: student.branch || 'Computer Science and Engineering',
+      branchCode: student.branchCode || 'CSE',
+      semester: student.semester || '5th Semester',
+      batch: student.batch || '2022 - 2026',
+      status: student.status || 'APPROVED',
+      bloodGroup: student.bloodGroup || 'O+',
+      category: student.category || 'General',
+      avatar: student.avatar || null,
+      hostelResident: Boolean(student.hostelResident),
+      hostelName: student.hostelName || 'Dr. APJ Abdul Kalam Hostel',
+      approvedAt: student.approvedAt || '2024-08-15',
+      validUntil: 'July 2026',
+      institution: 'Government Engineering College, Palamu',
+      affiliation: 'Jharkhand University of Technology (JUT), Ranchi',
+      verified: true
+    };
+
+    res.json({ success: true, verified: true, student: verificationProfile });
+  } catch (err) {
+    console.error('Student verification lookup error:', err);
+    res.status(500).json({ error: 'Database verification lookup failed.' });
+  }
+});
+
 app.post('/api/admin/reset-students', async (req, res) => {
   try {
     const result = await db.resetAllStudentData();
@@ -420,6 +468,16 @@ if (fs.existsSync(distPath)) {
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(distPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.json({
+      status: 'ONLINE',
+      service: 'GEC Palamu Backend API Server',
+      message: 'Backend microservices active. Frontend is hosted on Vercel.',
+      healthCheck: '/api/health',
+      timestamp: new Date().toISOString()
+    });
   });
 }
 

@@ -27,7 +27,7 @@ import { getStudentData, saveStudentData } from '../../utils/storage';
 import { api } from '../../services/api';
 import { printFeeReceipt } from '../../utils/printDocument';
 
-const OFFICIAL_UPI_ID = '6205482672@ptsbi';
+const OFFICIAL_UPI_ID = 'ujjwal.672@ptaxis';
 
 export default function FeeCalculator({ currentUser, studentData }) {
   const [activePortalTab, setActivePortalTab] = useState('pay'); // 'pay' | 'verify'

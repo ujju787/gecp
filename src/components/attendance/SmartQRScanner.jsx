@@ -91,14 +91,20 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
   // Generate Python-powered QR code for this specific student
   useEffect(() => {
     if (studentData) {
-      const payload = JSON.stringify({
-        type: "GECP_ATTENDANCE",
-        id: studentData.id,
-        roll: studentData.rollNo,
-        name: studentData.name,
-        branch: studentData.branchCode || studentData.branch || "CSE",
-        secKey: "valid-jut-token-998"
+      const origin = typeof window !== 'undefined' && window.location?.origin 
+        ? window.location.origin 
+        : 'https://gecp.vercel.app';
+      const params = new URLSearchParams({
+        verify: 'student',
+        id: studentData.id || '',
+        roll: studentData.rollNo || '',
+        name: studentData.name || '',
+        branch: studentData.branchCode || studentData.branch || 'CSE',
+        sem: studentData.semester || '5th Sem',
+        batch: studentData.batch || '2022 - 2026',
+        reg: studentData.regNo || ''
       });
+      const payload = `${origin}/?${params.toString()}`;
 
       // 1. Instant client-side QR generation (0ms)
       QRCode.toDataURL(payload, {
@@ -615,14 +621,20 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
                               className="w-16 h-16 bg-white p-1 rounded-xl shadow-inner border border-sky-400"
                               onError={() => {
                                 if (studentData) {
-                                  const payload = JSON.stringify({
-                                    type: "GECP_ATTENDANCE",
-                                    id: studentData.id,
-                                    roll: studentData.rollNo,
-                                    name: studentData.name,
-                                    branch: studentData.branchCode || studentData.branch || "CSE",
-                                    secKey: "valid-jut-token-998"
+                                  const origin = typeof window !== 'undefined' && window.location?.origin 
+                                    ? window.location.origin 
+                                    : 'https://gecp.vercel.app';
+                                  const params = new URLSearchParams({
+                                    verify: 'student',
+                                    id: studentData.id || '',
+                                    roll: studentData.rollNo || '',
+                                    name: studentData.name || '',
+                                    branch: studentData.branchCode || studentData.branch || 'CSE',
+                                    sem: studentData.semester || '5th Sem',
+                                    batch: studentData.batch || '2022 - 2026',
+                                    reg: studentData.regNo || ''
                                   });
+                                  const payload = `${origin}/?${params.toString()}`;
                                   QRCode.toDataURL(payload, { width: 200, margin: 2, color: { dark: '#064e3b', light: '#ffffff' } }, (err, url) => {
                                     if (!err && url) setStudentQr(url);
                                   });
@@ -637,9 +649,9 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
                           <div className="text-[10px] text-sky-200">
                             <div className="font-bold text-white flex items-center gap-1">
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Python QR Engine Verified</span>
+                              <span>Google Scanner & JUT Verified</span>
                             </div>
-                            <div className="text-[9px] text-sky-300">Scannable by Classroom Camera Terminal</div>
+                            <div className="text-[9px] text-sky-300">Scannable by Google Lens & Terminal</div>
                             <div className="font-mono text-[8px] text-slate-400">HASH: SHA256-JUT-GECP-ATTENDANCE</div>
                           </div>
                         </div>

@@ -219,7 +219,7 @@ export const printStudentIdCard = (student, qrDataUrl = '') => {
         <div class="qr-row">
           <div>
             ${safeQr ? `<img src="${safeQr}" class="qr-img" alt="Smart Attendance QR" />` : '<div style="font-size:9px; color:#64748b;">Smart QR Code Active</div>'}
-            <div style="font-size:7px; color:#64748b; margin-top:2px;">Campus Attendance QR</div>
+            <div style="font-size:7px; color:#64748b; margin-top:2px;">Scan via Google Scanner</div>
           </div>
           <div class="sig-block">
             <div class="sig-title">Dr. Sanjay Kr. Singh</div>
@@ -241,7 +241,7 @@ export const printStudentIdCard = (student, qrDataUrl = '') => {
       <ol style="margin: 0; padding-left: 14px;">
         <li>This card is the property of Government Engineering College, Palamu.</li>
         <li>Carrying this card is mandatory for campus entry, classrooms, labs, and examinations.</li>
-        <li>The embedded 2D QR code is used for IIT/NIT-style Smart QR Attendance recording.</li>
+        <li>The embedded 2D QR code is scannable by Google Scanner / Lens to verify official student enrollment, and for Smart Attendance recording.</li>
         <li>If lost, report immediately to the Academic Section & Proctorial Board.</li>
       </ol>
       <div style="text-align:center; margin-top:8px; font-weight:bold; color:#0c4a6e; font-size:8px;">

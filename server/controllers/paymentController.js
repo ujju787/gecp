@@ -1,6 +1,6 @@
 import { db } from '../db.js';
 
-const DEFAULT_UPI_ID = '6205482672@ptsbi';
+const DEFAULT_UPI_ID = 'ujjwal.672@ptaxis';
 
 // Process Online Fee Payment & Generate Verifiable Receipt
 export const processFeePayment = async (req, res) => {

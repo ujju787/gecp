@@ -16,10 +16,27 @@ export const verifyAndRecordQR = async (req, res) => {
         parsed = qrData;
       } else if (typeof qrData === 'string') {
         const trimmed = qrData.trim();
+        // 0. URL verification format (from Google Scanner compatible QR: https://domain/?verify=student&...)
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.includes('verify=') || trimmed.includes('?')) {
+          try {
+            const urlObj = new URL(trimmed.startsWith('http') ? trimmed : `https://dummy.org/${trimmed.startsWith('?') ? trimmed : '?' + trimmed}`);
+            const sp = urlObj.searchParams;
+            parsed = {
+              type: 'GECP_ATTENDANCE',
+              id: sp.get('id') || undefined,
+              roll: sp.get('roll') || sp.get('rollNo') || undefined,
+              name: sp.get('name') || undefined,
+              branch: sp.get('branch') || undefined
+            };
+          } catch (urlErr) {
+            console.warn('URL qr parse error:', urlErr);
+          }
+        }
+        
         // 1. Try standard JSON
-        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        if (!parsed && trimmed.startsWith('{') && trimmed.endsWith('}')) {
           parsed = JSON.parse(trimmed);
-        } else if (trimmed.includes('|')) {
+        } else if (!parsed && trimmed.includes('|')) {
           // 2. Pipe format: GECP|22/CSE/042|Rahul Kumar|CSE
           const parts = trimmed.split('|');
           parsed = {

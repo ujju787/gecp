@@ -28,6 +28,7 @@ import PalamuMitraBot from './components/chatbot/PalamuMitraBot';
 import SmartQRScanner from './components/attendance/SmartQRScanner';
 import ApprovalDesk from './components/admin/ApprovalDesk';
 import AuthModal from './components/auth/AuthModal';
+import StudentVerificationPage from './components/verification/StudentVerificationPage';
 
 // Data & Storage
 import { 
@@ -140,6 +141,31 @@ export default function App() {
   const [language, setLanguage] = useState('en'); // 'en' | 'hi'
   const [logoutNotice, setLogoutNotice] = useState(false);
 
+  // Detect if opened via Google Scanner / Google Lens / direct verification link
+  const [verificationData, setVerificationData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#\/?/, ''));
+      
+      const isVerify = searchParams.get('verify') === 'student' || 
+                       hashParams.get('verify') === 'student' ||
+                       window.location.pathname.startsWith('/verify');
+
+      if (isVerify) {
+        return {
+          id: searchParams.get('id') || hashParams.get('id') || '',
+          roll: searchParams.get('roll') || searchParams.get('rollNo') || hashParams.get('roll') || '',
+          name: searchParams.get('name') || hashParams.get('name') || '',
+          branch: searchParams.get('branch') || hashParams.get('branch') || '',
+          sem: searchParams.get('sem') || searchParams.get('semester') || hashParams.get('sem') || '',
+          batch: searchParams.get('batch') || hashParams.get('batch') || '',
+          reg: searchParams.get('reg') || searchParams.get('regNo') || hashParams.get('reg') || ''
+        };
+      }
+    }
+    return null;
+  });
+
   // Modals & Floating Tools
   const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -234,6 +260,21 @@ export default function App() {
   const handleToggleLanguage = () => {
     setLanguage(prev => prev === 'en' ? 'hi' : 'en');
   };
+
+  // If opened via Google Scanner / QR link, render official Verification page immediately
+  if (verificationData) {
+    return (
+      <StudentVerificationPage 
+        verificationData={verificationData}
+        onClose={() => {
+          setVerificationData(null);
+          if (typeof window !== 'undefined' && window.history?.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-sky-500 selection:text-white relative">
