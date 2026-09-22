@@ -36,6 +36,7 @@ import { COLLEGE_INFO } from '../../data/collegeData';
 import { api } from '../../services/api';
 import { printStudentIdCard } from '../../utils/printDocument';
 import { saveStudentData, buildStudentProfile } from '../../utils/storage';
+import { generateVerificationUrl } from '../../utils/verificationToken';
 import StudentProfileModal from '../profile/StudentProfileModal';
 import { 
   calculateSGPA, 
@@ -231,25 +232,8 @@ export default function StudentDashboard({
   const [pythonIdQr, setPythonIdQr] = useState(null);
   const [isGeneratingPythonQr, setIsGeneratingPythonQr] = useState(false);
 
-  // Generates public verification URL scannable by Google Lens / Google Scanner
-  const getVerificationUrl = () => {
-    const origin = typeof window !== 'undefined' && window.location?.origin 
-      ? window.location.origin 
-      : 'https://gecp.vercel.app';
-    const params = new URLSearchParams({
-      verify: 'student',
-      id: student?.id || 'usr-std-01',
-      roll: student?.rollNo || '22/CSE/042',
-      name: student?.name || 'Student',
-      branch: student?.branchCode || student?.branch || 'CSE',
-      sem: student?.semester || '5th Sem',
-      batch: student?.batch || '2022 - 2026',
-      reg: student?.regNo || 'JUT/2022/CSE/0892'
-    });
-    return `${origin}/?${params.toString()}`;
-  };
-
-  const qrPayload = getVerificationUrl();
+  // Generates secure public verification URL scannable by Google Lens / Google Scanner without exposing plain-text student PII
+  const qrPayload = generateVerificationUrl(student);
 
   const loadPythonIdQr = async () => {
     setIsGeneratingPythonQr(true);

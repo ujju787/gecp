@@ -29,6 +29,7 @@ import SmartQRScanner from './components/attendance/SmartQRScanner';
 import ApprovalDesk from './components/admin/ApprovalDesk';
 import AuthModal from './components/auth/AuthModal';
 import StudentVerificationPage from './components/verification/StudentVerificationPage';
+import { decodeVerificationToken } from './utils/verificationToken';
 
 // Data & Storage
 import { 
@@ -147,6 +148,16 @@ export default function App() {
       const searchParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#\/?/, ''));
       
+      // 1. Check for secure opaque token (v or token) to hide plain-text PII from scan URL
+      const token = searchParams.get('v') || searchParams.get('token') || hashParams.get('v') || hashParams.get('token');
+      if (token) {
+        const decoded = decodeVerificationToken(token);
+        if (decoded) {
+          return decoded;
+        }
+      }
+
+      // 2. Fallback to legacy query parameters
       const isVerify = searchParams.get('verify') === 'student' || 
                        hashParams.get('verify') === 'student' ||
                        window.location.pathname.startsWith('/verify');
@@ -165,6 +176,15 @@ export default function App() {
     }
     return null;
   });
+
+  // Clean URL in browser address bar when verification page is loaded to keep address bar clean
+  useEffect(() => {
+    if (verificationData && typeof window !== 'undefined' && window.history?.replaceState) {
+      if (window.location.search || window.location.hash) {
+        window.history.replaceState({}, '', '/verification');
+      }
+    }
+  }, [verificationData]);
 
   // Modals & Floating Tools
   const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);

@@ -32,6 +32,7 @@ import QRCode from 'qrcode';
 import { api } from '../../services/api';
 import { printStudentIdCard } from '../../utils/printDocument';
 import { calculateOverallAttendance } from '../../data/curriculumData';
+import { generateVerificationUrl } from '../../utils/verificationToken';
 
 export default function SmartQRScanner({ currentUser, studentData, setCurrentTab, onUpdateStudentData }) {
   const isStudent = currentUser?.role === 'student';
@@ -91,20 +92,7 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
   // Generate Python-powered QR code for this specific student
   useEffect(() => {
     if (studentData) {
-      const origin = typeof window !== 'undefined' && window.location?.origin 
-        ? window.location.origin 
-        : 'https://gecp.vercel.app';
-      const params = new URLSearchParams({
-        verify: 'student',
-        id: studentData.id || '',
-        roll: studentData.rollNo || '',
-        name: studentData.name || '',
-        branch: studentData.branchCode || studentData.branch || 'CSE',
-        sem: studentData.semester || '5th Sem',
-        batch: studentData.batch || '2022 - 2026',
-        reg: studentData.regNo || ''
-      });
-      const payload = `${origin}/?${params.toString()}`;
+      const payload = generateVerificationUrl(studentData);
 
       // 1. Instant client-side QR generation (0ms)
       QRCode.toDataURL(payload, {
@@ -621,20 +609,7 @@ export default function SmartQRScanner({ currentUser, studentData, setCurrentTab
                               className="w-16 h-16 bg-white p-1 rounded-xl shadow-inner border border-sky-400"
                               onError={() => {
                                 if (studentData) {
-                                  const origin = typeof window !== 'undefined' && window.location?.origin 
-                                    ? window.location.origin 
-                                    : 'https://gecp.vercel.app';
-                                  const params = new URLSearchParams({
-                                    verify: 'student',
-                                    id: studentData.id || '',
-                                    roll: studentData.rollNo || '',
-                                    name: studentData.name || '',
-                                    branch: studentData.branchCode || studentData.branch || 'CSE',
-                                    sem: studentData.semester || '5th Sem',
-                                    batch: studentData.batch || '2022 - 2026',
-                                    reg: studentData.regNo || ''
-                                  });
-                                  const payload = `${origin}/?${params.toString()}`;
+                                  const payload = generateVerificationUrl(studentData);
                                   QRCode.toDataURL(payload, { width: 200, margin: 2, color: { dark: '#064e3b', light: '#ffffff' } }, (err, url) => {
                                     if (!err && url) setStudentQr(url);
                                   });

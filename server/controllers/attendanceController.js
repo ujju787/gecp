@@ -16,21 +16,57 @@ export const verifyAndRecordQR = async (req, res) => {
         parsed = qrData;
       } else if (typeof qrData === 'string') {
         const trimmed = qrData.trim();
-        // 0. URL verification format (from Google Scanner compatible QR: https://domain/?verify=student&...)
-        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.includes('verify=') || trimmed.includes('?')) {
+        // 0. URL verification format (from Google Scanner compatible QR: https://domain/?v=... or https://domain/?verify=student&...)
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.includes('verify=') || trimmed.includes('v=') || trimmed.includes('?')) {
           try {
             const urlObj = new URL(trimmed.startsWith('http') ? trimmed : `https://dummy.org/${trimmed.startsWith('?') ? trimmed : '?' + trimmed}`);
             const sp = urlObj.searchParams;
-            parsed = {
-              type: 'GECP_ATTENDANCE',
-              id: sp.get('id') || undefined,
-              roll: sp.get('roll') || sp.get('rollNo') || undefined,
-              name: sp.get('name') || undefined,
-              branch: sp.get('branch') || undefined
-            };
+            const token = sp.get('v') || sp.get('token');
+            if (token) {
+              try {
+                const buff = Buffer.from(token, 'base64url');
+                const decoded = JSON.parse(buff.toString('utf-8'));
+                parsed = {
+                  type: 'GECP_ATTENDANCE',
+                  id: decoded.id || undefined,
+                  roll: decoded.r || undefined,
+                  name: decoded.n || undefined,
+                  branch: decoded.b || undefined
+                };
+              } catch (tokenErr) {
+                console.warn('Opaque token decode error in attendance:', tokenErr);
+              }
+            }
+
+            if (!parsed) {
+              parsed = {
+                type: 'GECP_ATTENDANCE',
+                id: sp.get('id') || undefined,
+                roll: sp.get('roll') || sp.get('rollNo') || undefined,
+                name: sp.get('name') || undefined,
+                branch: sp.get('branch') || undefined
+              };
+            }
           } catch (urlErr) {
             console.warn('URL qr parse error:', urlErr);
           }
+        }
+
+        // 0b. Direct opaque base64url token payload
+        if (!parsed && (trimmed.startsWith('ey') || (trimmed.length > 30 && /^[A-Za-z0-9_-]+$/.test(trimmed)))) {
+          try {
+            const buff = Buffer.from(trimmed, 'base64url');
+            const decoded = JSON.parse(buff.toString('utf-8'));
+            if (decoded && (decoded.id || decoded.r)) {
+              parsed = {
+                type: 'GECP_ATTENDANCE',
+                id: decoded.id || undefined,
+                roll: decoded.r || undefined,
+                name: decoded.n || undefined,
+                branch: decoded.b || undefined
+              };
+            }
+          } catch (e) {}
         }
         
         // 1. Try standard JSON
